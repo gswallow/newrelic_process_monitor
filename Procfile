@@ -1,1 +1,1 @@
-newrelic_process_monitor_agent:  ruby process_management_agent.rb
+newrelic_process_monitor_agent:  ruby process_monitor_agent.rb
