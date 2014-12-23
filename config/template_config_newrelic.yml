@@ -1,0 +1,8 @@
+newrelic:
+  license_key: 
+agents:
+  process_monitor:
+    agent_name: fqdn.hostname.com
+    processes:
+      - "unicorn master"
+    debug: true
