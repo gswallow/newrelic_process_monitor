@@ -32,26 +32,24 @@ module NewRelic::ProcessMonitorAgent
           rss = 0
           percent_memory = 0
           percent_cpu = 0
-          child_count = 0
+          pids = Array.new
 
           process_list = ProcTable.ps.select { |p| p.cmdline.include?(search) }
-          process_count = process_list.count
           process_list.each do |process|
+            pids << pid_of(process)
             rss = rss + rss_of(process)
             percent_memory = percent_memory + percent_memory_of(process)
             percent_cpu = percent_cpu + percent_cpu_of(process)
             children = children_of(process)
             children.each do |child|
+              pids << pid_of(child)
               rss = rss + rss_of(child)
               percent_memory = percent_memory + percent_memory_of(child)
               percent_cpu = percent_cpu + percent_cpu_of(child)
             end
-            child_count = child_count + children.count
           end
 
-          process_count = process_count + child_count
-
-          report_metric_check_debug("Process/#{search}/process count", 'count', process_count)
+          report_metric_check_debug("Process/#{search}/process count", 'count', pids.compact.uniq.count)
           report_metric_check_debug("Process/#{search}/rss", 'bytes', rss)
           report_metric_check_debug("Process/#{search}/percent cpu", 'percentage', percent_cpu)
           report_metric_check_debug("Process/#{search}/percent memory", 'percentage', percent_memory)
@@ -60,6 +58,10 @@ module NewRelic::ProcessMonitorAgent
       rescue => e
         $stderr.puts "#{e}: #{e.backtrace.join("\n   ")}"
       end
+    end
+
+    def pid_of(process)
+      process['pid'] or 1
     end
 
     def percent_cpu_of(process)
