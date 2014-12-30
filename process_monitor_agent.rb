@@ -28,6 +28,8 @@ module NewRelic::ProcessMonitorAgent
         #counter_track(stats, %w(asserts user), 'user')
         #track(stats, %w(connections current), 'current')
 
+        missing_processes = 0
+
         processes.each do |search|
           rss = 0
           percent_memory = 0
@@ -56,7 +58,11 @@ module NewRelic::ProcessMonitorAgent
           report_metric_check_debug("Process/#{search}/percent cpu", 'percentage', percent_cpu)
           report_metric_check_debug("Process/#{search}/percent memory", 'percentage', percent_memory)
           report_metric_check_debug("Process/#{search}/uptime", "seconds", uptime)
+
+          missing_processes += 1 if pids.empty?
         end
+
+        report_metric_check_debug('Missing Process/count', 'count', missing_processes)
 
       rescue => e
         $stderr.puts "#{e}: #{e.backtrace.join("\n   ")}"
