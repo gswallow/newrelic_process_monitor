@@ -32,10 +32,12 @@ module NewRelic::ProcessMonitorAgent
           rss = 0
           percent_memory = 0
           percent_cpu = 0
+          uptime = 0
           pids = Array.new
 
           process_list = ProcTable.ps.select { |p| p.cmdline.include?(search) }
           process_list.each do |process|
+            uptime ||= uptime_of(process)
             pids << pid_of(process)
             rss = rss + rss_of(process)
             percent_memory = percent_memory + percent_memory_of(process)
@@ -53,11 +55,16 @@ module NewRelic::ProcessMonitorAgent
           report_metric_check_debug("Process/#{search}/rss", 'bytes', rss)
           report_metric_check_debug("Process/#{search}/percent cpu", 'percentage', percent_cpu)
           report_metric_check_debug("Process/#{search}/percent memory", 'percentage', percent_memory)
+          report_metric_check_debug("Process/#{search}/uptime", "seconds", uptime)
         end
 
       rescue => e
         $stderr.puts "#{e}: #{e.backtrace.join("\n   ")}"
       end
+    end
+
+    def uptime_of(process)
+      Time.now.to_i - Time.at(File.stat("/proc/#{process['pid']}/stat").ctime).to_i if process['ppid'] == 1
     end
 
     def pid_of(process)
