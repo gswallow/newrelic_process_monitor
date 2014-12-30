@@ -62,7 +62,7 @@ module NewRelic::ProcessMonitorAgent
           missing_processes += 1 if pids.empty?
         end
 
-        report_metric_check_debug('Missing Process/count', 'count', missing_processes)
+        report_metric_check_debug('Missing Process/count', 'processes', missing_processes)
 
       rescue => e
         $stderr.puts "#{e}: #{e.backtrace.join("\n   ")}"
