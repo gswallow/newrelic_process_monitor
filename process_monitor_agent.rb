@@ -37,7 +37,7 @@ module NewRelic::ProcessMonitorAgent
 
           process_list = ProcTable.ps.select { |p| p.cmdline.include?(search) }
           process_list.each do |process|
-            uptime ||= uptime_of(process)
+            uptime = uptime_of(process) if process['ppid'] == 1
             pids << pid_of(process)
             rss = rss + rss_of(process)
             percent_memory = percent_memory + percent_memory_of(process)
